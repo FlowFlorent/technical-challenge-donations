@@ -18,7 +18,7 @@ Candidates do the work in their own repo (or local copy) and share the link or z
 
 ## Getting Started
 
-**Prerequisites:** Node.js 18+ and npm
+**Prerequisites:** Node.js 22 (pinned in `.nvmrc` — run `nvm use`) and npm. Newer Node versions fail to build `better-sqlite3`.
 
 ```bash
 # 1. Clone and install
