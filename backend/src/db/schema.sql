@@ -28,6 +28,21 @@ CREATE TABLE IF NOT EXISTS donations (
   FOREIGN KEY (contact_id) REFERENCES contacts(id)
 );
 
+-- A donor's standing monthly commitment to a form. created_at is the date
+-- the recurring donation was set up.
+CREATE TABLE IF NOT EXISTS recurring_donations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  form_id INTEGER NOT NULL,
+  contact_id INTEGER NOT NULL,
+  amount INTEGER NOT NULL CHECK (amount > 0),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (form_id) REFERENCES forms(id),
+  FOREIGN KEY (contact_id) REFERENCES contacts(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_recurring_donations_contact_id
+  ON recurring_donations (contact_id);
+
 CREATE TABLE IF NOT EXISTS campaigns (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   subject TEXT NOT NULL,

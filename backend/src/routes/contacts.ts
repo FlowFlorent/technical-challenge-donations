@@ -48,7 +48,13 @@ router.get("/:id", async (req: Request, res: Response) => {
       .where("donations.contact_id", req.params.id)
       .orderBy("donations.created_at", "desc");
 
-    res.json({ ...contact, donations });
+    const recurring_donations = await knexDb("recurring_donations")
+      .select("recurring_donations.*", "forms.title as form_title")
+      .join("forms", "forms.id", "recurring_donations.form_id")
+      .where("recurring_donations.contact_id", req.params.id)
+      .orderBy("recurring_donations.created_at", "desc");
+
+    res.json({ ...contact, donations, recurring_donations });
   } catch (error) {
     handleError(error, res);
   }
