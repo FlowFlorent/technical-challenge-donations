@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/index.ts",
+    "db:migrate": "tsx src/scripts/migrate.ts",
+    "db:reset": "tsx src/scripts/reset.ts"
   },
   "dependencies": {
     "better-sqlite3": "^11.7.0",

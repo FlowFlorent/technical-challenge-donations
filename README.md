@@ -32,6 +32,17 @@ npm run dev
 
 The app will be available at **http://localhost:3000** (frontend) and **http://localhost:3001** (backend API). The database is automatically created and seeded on first run.
 
+### Database migrations
+
+The schema is defined by migrations in `backend/src/db/migrations/`. Pending migrations run automatically when the backend starts; applied ones are recorded in the `schema_migrations` table.
+
+```bash
+npm run db:migrate   # apply pending migrations without starting the server
+npm run db:reset     # delete data.db and recreate it from migrations + seed (stop the dev server first)
+```
+
+To change the schema, add a new file such as `004_add_contact_notes.ts` exporting a `Migration` (`{ id, up(db) }`) and append it to the list in `migrations/index.ts`. Each migration runs in its own transaction. Never edit a migration that has already been applied — add a new one instead.
+
 ## The Application
 
 The platform has three features:
