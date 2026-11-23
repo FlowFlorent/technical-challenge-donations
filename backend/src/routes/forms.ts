@@ -7,7 +7,7 @@ var router = Router();
 router.get("/", (req: Request, res: Response) => {
   var forms = db
     .prepare(
-      `SELECT f.id, f.title, f.description, f.goal_amount, f.is_active, f.created_at, f.updated_at,
+      `SELECT f.id, f.title, f.description, f.goal_amount, f.is_active, f.allow_monthly_donations, f.created_at, f.updated_at,
               SUM(d.amount) as total_raised, COUNT(d.id) as donation_count
        FROM forms f
        JOIN donations d ON d.form_id = f.id
@@ -49,6 +49,7 @@ router.post("/", (req: Request, res: Response) => {
   var title = req.body.title;
   var description = req.body.description;
   var goal_amount = req.body.goal_amount;
+  const allowMonthly = req.body.allow_monthly_donations ?? false;
 
   if (!title || title.trim().length === 0) {
     res.status(400).json({ error: "Title is required" });
@@ -60,14 +61,22 @@ router.post("/", (req: Request, res: Response) => {
     return;
   }
 
+  if (typeof allowMonthly !== "boolean") {
+    res
+      .status(400)
+      .json({ error: "allow_monthly_donations must be a boolean" });
+    return;
+  }
+
   var result = db
     .prepare(
-      "INSERT INTO forms (title, description, goal_amount) VALUES (?, ?, ?)"
+      "INSERT INTO forms (title, description, goal_amount, allow_monthly_donations) VALUES (?, ?, ?, ?)"
     )
     .run(
       title.trim(),
       description || "",
-      goal_amount ? Math.round(goal_amount * 100) : null
+      goal_amount ? Math.round(goal_amount * 100) : null,
+      allowMonthly ? 1 : 0
     );
 
   var form = db
@@ -101,15 +110,34 @@ router.put("/:id", (req: Request, res: Response) => {
       : existing.goal_amount;
   var is_active =
     req.body.is_active !== undefined ? req.body.is_active : existing.is_active;
+  const allowMonthly = req.body.allow_monthly_donations;
 
   if (title.trim().length === 0) {
     res.status(400).json({ error: "Title cannot be empty" });
     return;
   }
 
+  if (allowMonthly !== undefined && typeof allowMonthly !== "boolean") {
+    res
+      .status(400)
+      .json({ error: "allow_monthly_donations must be a boolean" });
+    return;
+  }
+
   db.prepare(
-    "UPDATE forms SET title = ?, description = ?, goal_amount = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
-  ).run(title.trim(), description, goal_amount, is_active, req.params.id);
+    "UPDATE forms SET title = ?, description = ?, goal_amount = ?, is_active = ?, allow_monthly_donations = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+  ).run(
+    title.trim(),
+    description,
+    goal_amount,
+    is_active,
+    allowMonthly === undefined
+      ? existing.allow_monthly_donations
+      : allowMonthly
+        ? 1
+        : 0,
+    req.params.id
+  );
 
   var form = db
     .prepare("SELECT * FROM forms WHERE id = ?")
