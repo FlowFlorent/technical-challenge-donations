@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useContactDetail } from "@/hooks/useContacts";
+import type { ContactDonation } from "@/types/contacts";
 
 export default function ContactDetailPage() {
   const params = useParams();
@@ -77,49 +78,82 @@ export default function ContactDetailPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="font-semibold text-gray-900">Donation History</h2>
-        </div>
-        {contact.donations.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">
-            No donations yet
-          </div>
-        ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="text-left text-sm text-gray-500 border-b">
-                <th className="px-4 py-3 font-medium">Form</th>
-                <th className="px-4 py-3 font-medium">Amount</th>
-                <th className="px-4 py-3 font-medium">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {contact.donations.map((donation) => (
-                <tr
-                  key={donation.id}
-                  className="border-b last:border-0 text-sm"
-                >
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/forms/${donation.form_id}`}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      {donation.form_title}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 font-medium">
-                    ${(donation.amount / 100).toFixed(2)}
-                  </td>
-                  <td className="px-4 py-3 text-gray-500">
-                    {new Date(donation.created_at).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+      <DonationTable
+        title="Recurring Donations"
+        emptyMessage="No recurring donations set up"
+        donations={contact.recurring_donations}
+        amountSuffix=" / month"
+        className="mb-6"
+      />
+
+      <DonationTable
+        title="Donation History"
+        emptyMessage="No donations yet"
+        donations={contact.donations}
+      />
+    </div>
+  );
+}
+
+function DonationTable({
+  title,
+  emptyMessage,
+  donations,
+  amountSuffix = "",
+  className = "",
+}: {
+  title: string;
+  emptyMessage: string;
+  donations: Pick<
+    ContactDonation,
+    "id" | "form_id" | "form_title" | "amount" | "created_at"
+  >[];
+  amountSuffix?: string;
+  className?: string;
+}) {
+  return (
+    <div className={`bg-white rounded-lg border border-gray-200 ${className}`}>
+      <div className="p-4 border-b border-gray-200">
+        <h2 className="font-semibold text-gray-900">{title}</h2>
       </div>
+      {donations.length === 0 ? (
+        <div className="p-6 text-center text-gray-500">{emptyMessage}</div>
+      ) : (
+        <table className="w-full">
+          <thead>
+            <tr className="text-left text-sm text-gray-500 border-b">
+              <th className="px-4 py-3 font-medium">Form</th>
+              <th className="px-4 py-3 font-medium">Amount</th>
+              <th className="px-4 py-3 font-medium">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {donations.map((donation) => (
+              <tr key={donation.id} className="border-b last:border-0 text-sm">
+                <td className="px-4 py-3">
+                  <Link
+                    href={`/forms/${donation.form_id}`}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    {donation.form_title}
+                  </Link>
+                </td>
+                <td className="px-4 py-3 font-medium">
+                  ${(donation.amount / 100).toFixed(2)}
+                  {amountSuffix && (
+                    <span className="font-normal text-gray-500">
+                      {amountSuffix}
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-gray-500">
+                  {new Date(donation.created_at).toLocaleDateString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

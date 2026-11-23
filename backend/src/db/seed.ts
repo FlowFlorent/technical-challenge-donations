@@ -33,17 +33,23 @@ export function seedDatabase(db: Database.Database) {
 
   const forms = [
     { title: "Annual Gala 2024", description: "Support our annual fundraising gala benefiting local youth programs.", goal_amount: 5000000, is_active: 1 },
-    { title: "Emergency Relief Fund", description: "Help families affected by recent natural disasters in our community.", goal_amount: 2500000, is_active: 1 },
-    { title: "Youth Education Program", description: "Fund scholarships and after-school tutoring for underprivileged students.", goal_amount: 1000000, is_active: 1 },
+    { title: "Emergency Relief Fund", description: "Help families affected by recent natural disasters in our community.", goal_amount: 2500000, is_active: 1, allow_monthly_donations: 1 },
+    { title: "Youth Education Program", description: "Fund scholarships and after-school tutoring for underprivileged students.", goal_amount: 1000000, is_active: 1, allow_monthly_donations: 1 },
     { title: "Community Garden Project", description: "Build and maintain community gardens in food desert neighborhoods.", goal_amount: 500000, is_active: 1 },
     { title: "Holiday Gift Drive 2023", description: "Last year's holiday gift collection for children in shelters.", goal_amount: 1500000, is_active: 0 },
   ];
 
   const insertForm = db.prepare(
-    "INSERT INTO forms (title, description, goal_amount, is_active) VALUES (?, ?, ?, ?)"
+    "INSERT INTO forms (title, description, goal_amount, is_active, allow_monthly_donations) VALUES (?, ?, ?, ?, ?)"
   );
   for (const f of forms) {
-    insertForm.run(f.title, f.description, f.goal_amount, f.is_active);
+    insertForm.run(
+      f.title,
+      f.description,
+      f.goal_amount,
+      f.is_active,
+      f.allow_monthly_donations ?? 0
+    );
   }
 
   const donations = [
@@ -106,6 +112,8 @@ export function seedDatabase(db: Database.Database) {
     insertDonation.run(d.form_id, d.contact_id, d.amount, d.created_at);
   }
 
+  seedRecurringDonations(db);
+
   const campaigns = [
     {
       subject: "Thank You for Supporting Our Annual Gala!",
@@ -167,5 +175,23 @@ export function seedDatabase(db: Database.Database) {
   );
   for (const r of campaignRecipients) {
     insertRecipient.run(r.campaign_id, r.contact_id);
+  }
+}
+
+// Monthly commitments, only on forms seeded with allow_monthly_donations
+// (form 2 "Emergency Relief Fund" and form 3 "Youth Education Program").
+export function seedRecurringDonations(db: Database.Database) {
+  const recurringDonations = [
+    { form_id: 2, contact_id: 4, amount: 2500, created_at: "2024-04-03 14:20:00" },
+    { form_id: 3, contact_id: 4, amount: 1000, created_at: "2024-05-05 13:35:00" },
+    { form_id: 2, contact_id: 1, amount: 5000, created_at: "2024-04-01 08:05:00" },
+    { form_id: 3, contact_id: 6, amount: 2000, created_at: "2024-05-10 09:50:00" },
+  ];
+
+  const insertRecurring = db.prepare(
+    "INSERT INTO recurring_donations (form_id, contact_id, amount, created_at) VALUES (?, ?, ?, ?)"
+  );
+  for (const r of recurringDonations) {
+    insertRecurring.run(r.form_id, r.contact_id, r.amount, r.created_at);
   }
 }

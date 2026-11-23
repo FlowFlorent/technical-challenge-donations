@@ -11,6 +11,16 @@ export interface Contact {
 
 export interface ContactDetail extends Contact {
   donations: ContactDonation[];
+  recurring_donations: ContactRecurringDonation[];
+}
+
+/** A monthly commitment; created_at is when it was set up. */
+export interface ContactRecurringDonation {
+  id: number;
+  form_id: number;
+  amount: number;
+  created_at: string;
+  form_title: string;
 }
 
 export interface ContactDonation {
