@@ -18,6 +18,7 @@ type FormDetail = {
   description: string;
   goal_amount: number | null;
   is_active: number;
+  allow_monthly_donations: number;
   created_at: string;
   donations: Donation[];
 };
@@ -27,6 +28,31 @@ export default function FormDetailPage() {
   var [form, setForm] = useState<FormDetail | null>(null);
   var [loading, setLoading] = useState(true);
   var [error, setError] = useState<string | null>(null);
+  const [savingMonthly, setSavingMonthly] = useState(false);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
+
+  function handleToggleMonthly(enabled: boolean) {
+    setSavingMonthly(true);
+    setSettingsError(null);
+    fetch(`http://localhost:3001/api/forms/${params.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ allow_monthly_donations: enabled }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to update monthly donations");
+        return res.json();
+      })
+      .then((updated) =>
+        setForm((prev) =>
+          prev
+            ? { ...prev, allow_monthly_donations: updated.allow_monthly_donations }
+            : prev
+        )
+      )
+      .catch((err) => setSettingsError(err.message))
+      .finally(() => setSavingMonthly(false));
+  }
 
   useEffect(() => {
     fetch(`http://localhost:3001/api/forms/${params.id}`)
@@ -93,6 +119,44 @@ export default function FormDetailPage() {
             <span className="text-sm text-gray-500 block">Donations</span>
             <span className="text-xl font-bold">{form.donations.length}</span>
           </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg border border-gray-200 mb-6">
+        <div className="p-4 border-b border-gray-200">
+          <h2 className="font-semibold text-gray-900">Donation Options</h2>
+        </div>
+        <div className="p-4 flex items-center justify-between gap-6">
+          <div>
+            <span id="monthly-label" className="block text-sm font-medium text-gray-900">
+              Monthly donations
+            </span>
+            <span className="block text-sm text-gray-500">
+              Let donors choose to give every month instead of once.
+            </span>
+            {settingsError && (
+              <span className="block text-sm text-red-600 mt-1">
+                {settingsError}
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={!!form.allow_monthly_donations}
+            aria-labelledby="monthly-label"
+            disabled={savingMonthly}
+            onClick={() => handleToggleMonthly(!form!.allow_monthly_donations)}
+            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 ${
+              form.allow_monthly_donations ? "bg-blue-600" : "bg-gray-300"
+            }`}
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                form.allow_monthly_donations ? "translate-x-5" : "translate-x-0.5"
+              }`}
+            />
+          </button>
         </div>
       </div>
 

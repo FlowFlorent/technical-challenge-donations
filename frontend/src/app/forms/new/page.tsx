@@ -8,6 +8,7 @@ export default function NewFormPage() {
   var [title, setTitle] = useState("");
   var [description, setDescription] = useState("");
   var [goalAmount, setGoalAmount] = useState("");
+  const [allowMonthly, setAllowMonthly] = useState(false);
   var [submitting, setSubmitting] = useState(false);
   var [error, setError] = useState<string | null>(null);
 
@@ -23,6 +24,7 @@ export default function NewFormPage() {
         title,
         description,
         goal_amount: goalAmount ? parseFloat(goalAmount) : null,
+        allow_monthly_donations: allowMonthly,
       }),
     })
       .then((res) => {
@@ -82,6 +84,22 @@ export default function NewFormPage() {
             placeholder="e.g. 5000.00"
           />
         </div>
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={allowMonthly}
+            onChange={(e) => setAllowMonthly(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <span>
+            <span className="block text-sm font-medium text-gray-700">
+              Allow monthly donations
+            </span>
+            <span className="block text-sm text-gray-500">
+              Donors can choose to give this amount every month instead of once.
+            </span>
+          </span>
+        </label>
         <div className="flex gap-3 pt-2">
           <button
             type="submit"

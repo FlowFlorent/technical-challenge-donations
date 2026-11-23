@@ -13,6 +13,7 @@ export default function FormList({
     description: string;
     goal_amount: number | null;
     is_active: number;
+    allow_monthly_donations: number;
     total_raised: number;
     donation_count: number;
     created_at: string;

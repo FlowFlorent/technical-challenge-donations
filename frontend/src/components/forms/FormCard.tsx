@@ -13,6 +13,7 @@ export default function FormCard({
     description: string;
     goal_amount: number | null;
     is_active: number;
+    allow_monthly_donations: number;
     total_raised: number;
     donation_count: number;
     created_at: string;
@@ -39,15 +40,22 @@ export default function FormCard({
             {form.description}
           </p>
         </div>
-        <span
-          className={`text-xs px-2 py-1 rounded-full ${
-            form.is_active
-              ? "bg-green-100 text-green-700"
-              : "bg-gray-100 text-gray-500"
-          }`}
-        >
-          {form.is_active ? "Active" : "Inactive"}
-        </span>
+        <div className="flex shrink-0 gap-1">
+          {!!form.allow_monthly_donations && (
+            <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+              Monthly
+            </span>
+          )}
+          <span
+            className={`text-xs px-2 py-1 rounded-full ${
+              form.is_active
+                ? "bg-green-100 text-green-700"
+                : "bg-gray-100 text-gray-500"
+            }`}
+          >
+            {form.is_active ? "Active" : "Inactive"}
+          </span>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-3 text-sm">
