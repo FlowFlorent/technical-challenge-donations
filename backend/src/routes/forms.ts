@@ -8,9 +8,9 @@ router.get("/", (req: Request, res: Response) => {
   var forms = db
     .prepare(
       `SELECT f.id, f.title, f.description, f.goal_amount, f.is_active, f.allow_monthly_donations, f.created_at, f.updated_at,
-              SUM(d.amount) as total_raised, COUNT(d.id) as donation_count
+              COALESCE(SUM(d.amount), 0) as total_raised, COUNT(d.id) as donation_count
        FROM forms f
-       JOIN donations d ON d.form_id = f.id
+       LEFT JOIN donations d ON d.form_id = f.id
        GROUP BY f.id
        ORDER BY f.created_at DESC`
     )
